@@ -11,9 +11,12 @@
   <p>Wenn du diese Seite siehst, wird die Webseite korrekt vom Server ausgeliefert.</p>
 
   <button id="statusButton">Serverstatus prüfen</button>
+  <button id="socketButton">Socket-Nachricht senden</button>
 
   <pre id="output">Noch keine Antwort vom Server.</pre>
 
+  <!-- Socket.IO Client wird automatisch vom Server bereitgestellt -->
+  <script src="/socket.io/socket.io.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
