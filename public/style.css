@@ -5,9 +5,24 @@ body {
   padding: 30px;
 }
 
+.box {
+  background: #2b2b2b;
+  border: 1px solid #555;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+input {
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 250px;
+}
+
 button {
   padding: 10px 16px;
   cursor: pointer;
+  margin-right: 10px;
 }
 
 pre {
@@ -15,4 +30,5 @@ pre {
   padding: 15px;
   background: #111;
   border: 1px solid #555;
+  white-space: pre-wrap;
 }

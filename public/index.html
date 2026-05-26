@@ -8,14 +8,27 @@
 <body>
   <h1>Webgame Server Test</h1>
 
-  <p>Wenn du diese Seite siehst, wird die Webseite korrekt vom Server ausgeliefert.</p>
+  <section class="box">
+    <h2>Login</h2>
 
-  <button id="statusButton">Serverstatus prüfen</button>
-  <button id="socketButton">Socket-Nachricht senden</button>
+    <input id="usernameInput" type="text" placeholder="Benutzername">
+    <input id="passwordInput" type="password" placeholder="Passwort">
 
-  <pre id="output">Noch keine Antwort vom Server.</pre>
+    <button id="loginButton">Einloggen</button>
+  </section>
 
-  <!-- Socket.IO Client wird automatisch vom Server bereitgestellt -->
+  <section class="box">
+    <h2>Server-Test</h2>
+
+    <button id="statusButton">Serverstatus prüfen</button>
+    <button id="socketButton">Socket-Nachricht senden</button>
+  </section>
+
+  <section class="box">
+    <h2>Ausgabe</h2>
+    <pre id="output">Noch keine Antwort vom Server.</pre>
+  </section>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="game.js"></script>
 </body>
