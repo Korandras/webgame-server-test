@@ -3,23 +3,13 @@ const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 
+const { initDatabase, getDatabase } = require("./database");
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
-
-// Demo-Benutzer für den Anfang.
-// Später ersetzen wir das durch eine Datenbank.
-const users = [
-  {
-    username: "kora",
-    password: "test123",
-    playerName: "Korandras",
-    level: 1,
-    gold: 50
-  }
-];
 
 // Merkt sich eingeloggte Spieler pro Socket-ID
 const loggedInPlayers = new Map();
@@ -41,45 +31,62 @@ io.on("connection", (socket) => {
     socketId: socket.id
   });
 
-  socket.on("login", (data) => {
-    const username = data.username;
-    const password = data.password;
+  socket.on("login", async (data) => {
+    try {
+      const username = data.username;
+      const password = data.password;
 
-    const user = users.find((u) => {
-      return u.username === username && u.password === password;
-    });
+      const db = getDatabase();
 
-    if (!user) {
-      socket.emit("loginResult", {
-        success: false,
-        message: "Login fehlgeschlagen. Benutzername oder Passwort falsch."
-      });
+      const user = await db.get(
+        `
+        SELECT id, username, password, playerName, level, gold
+        FROM users
+        WHERE username = ?
+        `,
+        [username]
+      );
 
-      return;
-    }
+      if (!user || user.password !== password) {
+        socket.emit("loginResult", {
+          success: false,
+          message: "Login fehlgeschlagen. Benutzername oder Passwort falsch."
+        });
 
-    loggedInPlayers.set(socket.id, {
-      username: user.username,
-      playerName: user.playerName,
-      level: user.level,
-      gold: user.gold
-    });
+        return;
+      }
 
-    socket.emit("loginResult", {
-      success: true,
-      message: "Login erfolgreich!",
-      player: {
+      loggedInPlayers.set(socket.id, {
+        id: user.id,
+        username: user.username,
         playerName: user.playerName,
         level: user.level,
         gold: user.gold
-      }
-    });
+      });
 
-    socket.broadcast.emit("serverMessage", {
-      message: `${user.playerName} ist dem Spiel beigetreten.`
-    });
+      socket.emit("loginResult", {
+        success: true,
+        message: "Login erfolgreich!",
+        player: {
+          playerName: user.playerName,
+          level: user.level,
+          gold: user.gold
+        }
+      });
 
-    console.log(`${user.playerName} hat sich eingeloggt.`);
+      socket.broadcast.emit("serverMessage", {
+        message: `${user.playerName} ist dem Spiel beigetreten.`
+      });
+
+      console.log(`${user.playerName} hat sich eingeloggt.`);
+    } catch (error) {
+      console.error("Fehler beim Login:", error);
+
+      socket.emit("loginResult", {
+        success: false,
+        message: "Serverfehler beim Login."
+      });
+    }
   });
 
   socket.on("playerMessage", (data) => {
@@ -114,6 +121,17 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server läuft auf Port ${PORT}`);
-});
+async function startServer() {
+  try {
+    await initDatabase();
+
+    server.listen(PORT, () => {
+      console.log(`Server läuft auf Port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server konnte nicht gestartet werden:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
